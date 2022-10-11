@@ -256,9 +256,6 @@ public:
   FVector GetTileCenter(FVector Position);
 
   UFUNCTION(BlueprintCallable, Category="Tiles")
-  void LoadTilesAtPosition(FVector Position, float RadiusX = 100.0f, float RadiusY = 100.0f);
-
-  UFUNCTION(BlueprintCallable, Category="Tiles")
   void UpdateMaps(FVector Position, float RadiusX, float RadiusY, float CacheRadiusX, float CacheRadiusY);
 
   UFUNCTION(BlueprintCallable, Category="Texture")
@@ -309,6 +306,11 @@ public:
   float ParticleForceMulFactor = 1.0;
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
   int SoilType = 0;
+<<<<<<< HEAD
+=======
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  bool bUseSoilType = false;
+>>>>>>> dev
   UPROPERTY(EditAnywhere)
   bool NNVerbose = false;
 

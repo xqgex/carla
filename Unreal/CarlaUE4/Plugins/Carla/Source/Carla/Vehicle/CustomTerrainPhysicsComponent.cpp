@@ -1202,6 +1202,10 @@ void UCustomTerrainPhysicsComponent::BeginPlay()
   ParticleForceMulFactor = 1.f;
   FloorHeight = 0.0;
   bDrawLoadedTiles = false;
+<<<<<<< HEAD
+=======
+  bUseSoilType = false;
+>>>>>>> dev
 #endif
 
   int IntValue;
@@ -1296,6 +1300,10 @@ void UCustomTerrainPhysicsComponent::BeginPlay()
   if (FParse::Param(FCommandLine::Get(), TEXT("-disable-nn-verbose")))
   {
     NNVerbose = false;
+  }
+  if (FParse::Param(FCommandLine::Get(), TEXT("-use-terrain-type")))
+  {
+    bUseSoilType = true;
   }
   if (FParse::Param(FCommandLine::Get(), TEXT("-use-impulse")))
   { 
@@ -1925,7 +1933,11 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
   const FVehicleControl& VehicleControl = Vehicle->GetVehicleControl();
   carla::learning::Inputs NNInput {Wheel0,Wheel1,Wheel2,Wheel3, 
       VehicleControl.Steer, VehicleControl.Throttle, VehicleControl.Brake, 
-      NNVerbose};
+      SoilType, NNVerbose};
+  if (!bUseSoilType)
+  {
+    NNInput.terrain_type = -1;
+  }
   if (VehicleControl.bReverse)
   {
     NNInput.throttle *= -1;
