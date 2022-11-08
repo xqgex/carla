@@ -6,8 +6,12 @@ theme: readthedocs
 extra_css: [extra.css]
 extra_javascript: [extra.js]
 
+site_url: ""
+use_directory_urls: false
+
 nav:
-- Home: 'index.md'
+- RACER-SIM Home: 'index.md'
+- CARLA Docs: 'carla_home.md'
 - Getting started:
   - 'Introduction': 'start_introduction.md'
   - 'Quick start package installation': 'start_quickstart.md'
@@ -15,6 +19,7 @@ nav:
   - 'Building CARLA' : 'build_carla.md'
 
 - Next steps:
+  - 'Desert and Forest Terrain Editor': 'tool_terrain_editor.md'
   - 'Content authoring - maps': 'tuto_content_authoring_maps.md'  
   - 'Content authoring - vehicles': 'tuto_content_authoring_vehicles.md'  
 
@@ -56,3 +61,4 @@ nav:
 markdown_extensions:
   - admonition 
  
+plugins: []
