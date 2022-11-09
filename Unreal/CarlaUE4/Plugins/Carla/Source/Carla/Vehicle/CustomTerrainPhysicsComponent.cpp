@@ -1870,7 +1870,7 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
     SetUpParticleArrays(ParticlesWheel1, ParticlePos1, ParticleVel1, WheelTransform1);
     SetUpParticleArrays(ParticlesWheel2, ParticlePos2, ParticleVel2, WheelTransform2);
     SetUpParticleArrays(ParticlesWheel3, ParticlePos3, ParticleVel3, WheelTransform3);
-
+    
     SetUpWheelArrays(Vehicle, 0, WheelPos0, WheelOrient0, WheelLinVel0, WheelAngVel0);
     SetUpWheelArrays(Vehicle, 1, WheelPos1, WheelOrient1, WheelLinVel1, WheelAngVel1);
     SetUpWheelArrays(Vehicle, 2, WheelPos2, WheelOrient2, WheelLinVel2, WheelAngVel2);
@@ -1882,16 +1882,20 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
       ParticlePos0.GetData(), ParticleVel0.GetData(),
       WheelPos0.GetData(), WheelOrient0.GetData(),
       WheelLinVel0.GetData(), WheelAngVel0.GetData()};
+
   carla::learning::WheelInput Wheel1 {
       static_cast<int>(ParticlesWheel1.size()), 
       ParticlePos1.GetData(), ParticleVel1.GetData(),
       WheelPos1.GetData(), WheelOrient1.GetData(),
       WheelLinVel1.GetData(), WheelAngVel1.GetData()};
+
   carla::learning::WheelInput Wheel2 {
       static_cast<int>(ParticlesWheel2.size()), 
       ParticlePos2.GetData(), ParticleVel2.GetData(),
       WheelPos2.GetData(), WheelOrient2.GetData(),
       WheelLinVel2.GetData(), WheelAngVel2.GetData()};
+
+
   carla::learning::WheelInput Wheel3 {
       static_cast<int>(ParticlesWheel3.size()), 
       ParticlePos3.GetData(), ParticleVel3.GetData(),
@@ -2045,14 +2049,16 @@ void UCustomTerrainPhysicsComponent::UpdateParticles(
   {
     for (size_t i = 0; i < Particles.size(); i++)
     {
-      FVector Force = FVector(Forces[3*i + 0], Forces[3*i + 1], Forces[3*i + 2]) * ParticleForceMulFactor;
-      FVector LocalAcceleration = Force;
-      FVector UELocalAcceleration = SIToUEFrame(LocalAcceleration);
-      FVector UEGlobalAcceleration = WheelTransform.TransformVector(UELocalAcceleration);
-      FVector Acceleration = UEFrameToSI(UEGlobalAcceleration);
-      FParticle* P = Particles[i];
-      P->Velocity = P->Velocity + Acceleration*DeltaTime;
-      P->Position = P->Position + P->Velocity*DeltaTime;
+      if(Particles[i] != nullptr){
+        FVector Force = FVector(Forces[3*i + 0], Forces[3*i + 1], Forces[3*i + 2]) * ParticleForceMulFactor;
+        FVector LocalAcceleration = Force;
+        FVector UELocalAcceleration = SIToUEFrame(LocalAcceleration);
+        FVector UEGlobalAcceleration = WheelTransform.TransformVector(UELocalAcceleration);
+        FVector Acceleration = UEFrameToSI(UEGlobalAcceleration);
+        FParticle* P = Particles[i];
+        P->Velocity = P->Velocity + Acceleration*DeltaTime;
+        P->Position = P->Position + P->Velocity*DeltaTime;
+      }
     }
   }
   else
@@ -2478,9 +2484,11 @@ void UCustomTerrainPhysicsComponent::SetUpParticleArrays(std::vector<FParticle*>
       ParticleVelOut.Add(Particle->Velocity.Y);
       ParticleVelOut.Add(Particle->Velocity.Z);
     }
+
     if(ParticlesIn.size() < MaxParticlesPerWheel)
     {
-      for (int i = 0; i < (MaxParticlesPerWheel - ParticlesIn.size()); ++i)
+      int Diff = MaxParticlesPerWheel - ParticlesIn.size();
+      for (int i = 0; i < Diff; ++i)
       {
         ParticlePosOut.Add(0.f);
         ParticlePosOut.Add(0.f);
@@ -2488,6 +2496,7 @@ void UCustomTerrainPhysicsComponent::SetUpParticleArrays(std::vector<FParticle*>
         ParticleVelOut.Add(0.f);
         ParticleVelOut.Add(0.f);
         ParticleVelOut.Add(0.f);
+        ParticlesIn.push_back( &Constant );
       }
     }
   }

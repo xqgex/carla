@@ -519,7 +519,9 @@ private:
   FIntVector CurrentLargeMapTileId = FIntVector(-1,-1,0);
   UPROPERTY(VisibleAnywhere)
   ALargeMapManager* LargeMapManager = nullptr;
-
+  
+  FParticle Constant;
+  
   TArray<ACarlaWheeledVehicle*> Vehicles;
   FSparseHighDetailMap SparseMap;
   TArray<uint8> Data;
