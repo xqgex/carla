@@ -345,7 +345,7 @@ private:
       TArray<float>& WheelAngularVelocity);
   void UpdateParticles(
       std::vector<FParticle*> Particles, std::vector<float> Forces,
-      float DeltaTime, const FTransform& WheelTransform);
+      float DeltaTime, const FTransform& WheelTransform, const float& NumParticlesToUpdate);
   void ApplyForcesToVehicle(
       ACarlaWheeledVehicle *Vehicle,
       FVector ForceWheel0, FVector ForceWheel1, FVector ForceWheel2, FVector ForceWheel3,

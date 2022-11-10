@@ -24,6 +24,7 @@ namespace learning {
     float* wheel_oritentation;
     float* wheel_linear_velocity;
     float* wheel_angular_velocity;
+    int num_real_particles = 0;
   };
 
   struct Inputs {

@@ -1813,6 +1813,7 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
   }
 
   std::vector<FParticle*> ParticlesWheel0, ParticlesWheel1, ParticlesWheel2, ParticlesWheel3;
+  int32_t NumParticlesWheel0, NumParticlesWheel1, NumParticlesWheel2, NumParticlesWheel3;
   {
     TRACE_CPUPROFILER_EVENT_SCOPE(ParticleSearch);
     auto GetAndFilterParticlesInBox = 
@@ -1832,9 +1833,13 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
     auto FutureParticles3 = Async(EAsyncExecution::ThreadPool, 
         [&]() {return GetAndFilterParticlesInBox(BboxWheel3);});
     ParticlesWheel0 = FutureParticles0.Get();
+    NumParticlesWheel0 = ParticlesWheel0.size();
     ParticlesWheel2 = FutureParticles2.Get();
+    NumParticlesWheel2 = ParticlesWheel2.size();
     ParticlesWheel1 = FutureParticles1.Get();
+    NumParticlesWheel1 = ParticlesWheel1.size();
     ParticlesWheel3 = FutureParticles3.Get();
+    NumParticlesWheel3 = ParticlesWheel3.size();
   }
 
   std::vector<FParticle> BenchParticles;
@@ -1881,26 +1886,30 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
       static_cast<int>(ParticlesWheel0.size()), 
       ParticlePos0.GetData(), ParticleVel0.GetData(),
       WheelPos0.GetData(), WheelOrient0.GetData(),
-      WheelLinVel0.GetData(), WheelAngVel0.GetData()};
+      WheelLinVel0.GetData(), WheelAngVel0.GetData(),
+      NumParticlesWheel0 };
 
   carla::learning::WheelInput Wheel1 {
       static_cast<int>(ParticlesWheel1.size()), 
       ParticlePos1.GetData(), ParticleVel1.GetData(),
       WheelPos1.GetData(), WheelOrient1.GetData(),
-      WheelLinVel1.GetData(), WheelAngVel1.GetData()};
+      WheelLinVel1.GetData(), WheelAngVel1.GetData(),
+      NumParticlesWheel1};
 
   carla::learning::WheelInput Wheel2 {
       static_cast<int>(ParticlesWheel2.size()), 
       ParticlePos2.GetData(), ParticleVel2.GetData(),
       WheelPos2.GetData(), WheelOrient2.GetData(),
-      WheelLinVel2.GetData(), WheelAngVel2.GetData()};
+      WheelLinVel2.GetData(), WheelAngVel2.GetData(),
+      NumParticlesWheel2};
 
 
   carla::learning::WheelInput Wheel3 {
       static_cast<int>(ParticlesWheel3.size()), 
       ParticlePos3.GetData(), ParticleVel3.GetData(),
       WheelPos3.GetData(), WheelOrient3.GetData(),
-      WheelLinVel3.GetData(), WheelAngVel3.GetData()};
+      WheelLinVel3.GetData(), WheelAngVel3.GetData(),
+      NumParticlesWheel3};
 
   const FVehicleControl& VehicleControl = Vehicle->GetVehicleControl();
   ASoilTypeManager* SoilTypeManagerActor =  Cast<ASoilTypeManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ASoilTypeManager::StaticClass()));
@@ -1957,18 +1966,18 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
       FScopeLock ScopeLock(&SparseMap.Lock_Particles);
       auto UpdateFutureParticles = 
       [&] (std::vector<FParticle*>& Particles, std::vector<float>& Forces, float DeltaTime,
-          const FTransform& WheelTransform)
+          const FTransform& WheelTransform, const float& NumParticlesToUpdate )
       {
-        UpdateParticles( Particles, Forces, DeltaTime, WheelTransform );
+        UpdateParticles( Particles, Forces, DeltaTime, WheelTransform, NumParticlesToUpdate );
       };
       UpdateFutureParticles(
-          ParticlesWheel0, Output.wheel0._particle_forces, DeltaTime, WheelTransform0);
+          ParticlesWheel0, Output.wheel0._particle_forces, DeltaTime, WheelTransform0, NumParticlesWheel0);
       UpdateFutureParticles(
-          ParticlesWheel1, Output.wheel1._particle_forces, DeltaTime, WheelTransform1);
+          ParticlesWheel1, Output.wheel1._particle_forces, DeltaTime, WheelTransform1, NumParticlesWheel1);
       UpdateFutureParticles(
-          ParticlesWheel2, Output.wheel2._particle_forces, DeltaTime, WheelTransform2);
+          ParticlesWheel2, Output.wheel2._particle_forces, DeltaTime, WheelTransform2, NumParticlesWheel2);
       UpdateFutureParticles(
-          ParticlesWheel3, Output.wheel3._particle_forces, DeltaTime, WheelTransform3);
+          ParticlesWheel3, Output.wheel3._particle_forces, DeltaTime, WheelTransform3, NumParticlesWheel3);
     }
     if (DrawDebugInfo)
     {
@@ -2041,13 +2050,15 @@ void UCustomTerrainPhysicsComponent::RunNNPhysicsSimulation(
 
 void UCustomTerrainPhysicsComponent::UpdateParticles(
     std::vector<FParticle*> Particles, std::vector<float> Forces,
-    float DeltaTime, const FTransform& WheelTransform)
+    float DeltaTime, const FTransform& WheelTransform, const float& NumParticlesToUpdate )
 {
   TRACE_CPUPROFILER_EVENT_SCOPE(UpdateParticles);
   //UE_LOG(LogCarla, Log, TEXT("%d vs %d"), Particles.size(), Forces.size()/3);
+  UE_LOG(LogCarla, Log, TEXT("NumParticlesToUpdate %d particles"), NumParticlesToUpdate );
+
   if(bUseLocalFrame)
   {
-    for (size_t i = 0; i < Particles.size(); i++)
+    for (size_t i = 0; i < NumParticlesToUpdate; i++)
     {
       if(Particles[i] != nullptr){
         FVector Force = FVector(Forces[3*i + 0], Forces[3*i + 1], Forces[3*i + 2]) * ParticleForceMulFactor;
