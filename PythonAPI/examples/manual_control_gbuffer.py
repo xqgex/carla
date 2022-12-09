@@ -1213,7 +1213,8 @@ class CameraManager(object):
             print('ERROR: GBuffer methods are not available for the current sensor type"%s". Only "sensor.camera.rgb" is currently supported.' % name)
             return False
         if self.output_texture_id != 0:
-            self.sensor.stop_gbuffer(self.output_texture_id - 1)
+            if self.sensor.is_listening() and self.sensor.is_listening_gbuffer(self.output_texture_id - 1):
+                self.sensor.stop_gbuffer(self.output_texture_id - 1)
         self.output_texture_id = index % len(gbuffer_names)
         adjusted_index = self.output_texture_id - 1
         if self.output_texture_id != 0:
@@ -1257,7 +1258,7 @@ class CameraManager(object):
             # Example of converting the raw_data from a carla.DVSEventArray
             # sensor into a NumPy array and using it as an image
             dvs_events = np.frombuffer(image.raw_data, dtype=np.dtype([
-                ('x', np.uint16), ('y', np.uint16), ('t', np.int64), ('pol', np.bool)]))
+                ('x', np.uint16), ('y', np.uint16), ('t', np.int64), ('pol', np.bool_)]))
             dvs_img = np.zeros((image.height, image.width, 3), dtype=np.uint8)
             # Blue is positive, red is negative
             dvs_img[dvs_events[:]['y'], dvs_events[:]['x'], dvs_events[:]['pol'] * 2] = 255

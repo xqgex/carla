@@ -591,9 +591,11 @@ namespace detail {
       uint32_t GBufferId,
       std::function<void(Buffer)> callback)
   {
-    std::vector<unsigned char> token_data = _pimpl->CallAndWait<std::vector<unsigned char>>("get_gbuffer_token", ActorId, GBufferId);
+    auto token_data = _pimpl->CallAndWait<std::vector<unsigned char>>("get_gbuffer_token", ActorId, GBufferId);
     streaming::Token token;
-    std::memcpy(&token.data[0u], token_data.data(), token_data.size());
+    if (token_data.size() > token.data.size())
+      log_error("Invalid token data.");
+    std::copy(token_data.begin(), token_data.end(), token.data.begin());
     _pimpl->streaming_client.Subscribe(token, std::move(callback));
   }
 
@@ -601,9 +603,11 @@ namespace detail {
       rpc::ActorId ActorId,
       uint32_t GBufferId)
   {
-    std::vector<unsigned char> token_data = _pimpl->CallAndWait<std::vector<unsigned char>>("get_gbuffer_token", ActorId, GBufferId);
+    auto token_data = _pimpl->CallAndWait<std::vector<unsigned char>>("get_gbuffer_token", ActorId, GBufferId);
     streaming::Token token;
-    std::memcpy(&token.data[0u], token_data.data(), token_data.size());
+    if (token_data.size() > token.data.size())
+      log_error("Invalid token data.");
+    std::copy(token_data.begin(), token_data.end(), token.data.begin());
     _pimpl->streaming_client.UnSubscribe(token);
   }
 

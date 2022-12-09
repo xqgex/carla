@@ -30,6 +30,7 @@ namespace client {
             StopGBuffer(i - 1);
         }
         Stop();
+        listening_mask = {};
       } catch (const std::exception &e) {
         log_error("exception trying to stop sensor:", GetDisplayId(), ':', e.what());
       }
@@ -63,6 +64,11 @@ namespace client {
       log_warning("GBuffer methods are not supported on non-RGB sensors (sensor.camera.rgb).");
       return;
     }
+    if (IsListeningGBuffer(GBufferId))
+    {
+      log_info("Attempted to listen to a gbuffer while it was already being listened to.");
+      return;
+    }
     GetEpisode().Lock()->SubscribeToGBuffer(*this, GBufferId, std::move(callback));
     listening_mask.set(0);
     listening_mask.set(GBufferId + 1);
@@ -74,6 +80,11 @@ namespace client {
     if (GetActorDescription().description.id != "sensor.camera.rgb")
     {
       log_warning("GBuffer methods are not supported on non-RGB sensors (sensor.camera.rgb).");
+      return;
+    }
+    if (!IsListeningGBuffer(GBufferId))
+    {
+      log_error("Attempted to stop listening to a gbuffer that had not been previously listened to.");
       return;
     }
     GetEpisode().Lock()->UnSubscribeFromGBuffer(*this, GBufferId);
@@ -90,6 +101,7 @@ namespace client {
       }
       Stop();
     }
+    listening_mask = {};
     return Actor::Destroy();
   }
 

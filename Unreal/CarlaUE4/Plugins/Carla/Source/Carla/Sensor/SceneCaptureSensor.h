@@ -583,7 +583,7 @@ protected:
         SendGBuffer(Self, C.CustomStencil, GBufferData, ID);
         break;
       default:
-          abort();
+          UE_LOG(LogCarla, Error, TEXT("Unknown GBuffer ID."));
       }
     }
   }
