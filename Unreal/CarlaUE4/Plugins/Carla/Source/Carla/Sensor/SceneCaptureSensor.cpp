@@ -511,25 +511,28 @@ void ASceneCaptureSensor::CaptureSceneExtended()
   Prior = GBufferPtr->DesiredTexturesMask;
   GBufferPtr->OwningActor = CaptureComponent2D->GetViewOwner();
 
-#define CARLA_GBUFFER_DISABLE_TAA // Temporarily disable TAA to avoid jitter.
-
-#ifdef CARLA_GBUFFER_DISABLE_TAA
-  bool bTAA = CaptureComponent2D->ShowFlags.TemporalAA;
-  if (bTAA) {
-    CaptureComponent2D->ShowFlags.TemporalAA = false;
-  }
+  constexpr bool DisableTAA = 
+#ifndef CARLA_GBUFFER_ENABLE_TAA
+    true;
+#else
+    false;
 #endif
+
+  bool ShowFlagTAA = CaptureComponent2D->ShowFlags.TemporalAA;
+
+  if (DisableTAA)
+    CaptureComponent2D->ShowFlags.TemporalAA = false;
 
   CaptureComponent2D->CaptureSceneWithGBuffer(GBuffer);
 
-#ifdef CARLA_GBUFFER_DISABLE_TAA
-  if (bTAA) {
-    CaptureComponent2D->ShowFlags.TemporalAA = true;
-  }
-#undef CARLA_GBUFFER_DISABLE_TAA
-#endif
+  if (DisableTAA)
+    CaptureComponent2D->ShowFlags.TemporalAA = ShowFlagTAA;
 
-  AsyncTask(ENamedThreads::AnyHiPriThreadNormalTask, [this, GBuffer = MoveTemp(GBufferPtr)]() mutable
+  FlushRenderingCommands();
+  
+  AsyncTask(
+    ENamedThreads::AnyHiPriThreadNormalTask,
+    [this, GBuffer = MoveTemp(GBufferPtr)]() mutable
   {
     SendGBufferTextures(*GBuffer);
   });
