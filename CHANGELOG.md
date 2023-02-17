@@ -3,6 +3,7 @@
   * Fixed bug causing the TM's unstuck logic to incorrectly remove the vehicles in some situations.
   * Fixed the extra data in Directx textures, so we need to copy row by row on Windows to remove extra bytes on images
   * Restored gamma value to 2.2 instead of 2.4
+  * Pedestrians with AI or in replayer are now faster around 10x. They have collisions disabled until they hit a vehicle.
   * Added API function to avoid replaying the spectator
     * `Client.set_replayer_ignore_spectator(bool)`
     * `start_replaying.py` using flag `--move-spectator`
